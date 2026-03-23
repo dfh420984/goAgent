@@ -1,0 +1,60 @@
+name: 报表生成工作流
+description: 自动生成日报/周报
+version: "1.0"
+
+nodes:
+  - id: start
+    type: trigger
+    name: 开始
+    next: collect_data
+
+  - id: collect_data
+    type: parallel
+    name: 并行收集数据
+    branches:
+      - nodes:
+          - id: get_metrics
+            type: tool
+            tool: http_client
+            params:
+              url: "http://api.internal/metrics"
+        next: merge_data
+      - nodes:
+          - id: get_logs
+            type: tool
+            tool: http_client
+            params:
+              url: "http://api.internal/logs"
+        next: merge_data
+      - nodes:
+          - id: get_tasks
+            type: tool
+            tool: file_processor
+            params:
+              action: read
+              path: "./tasks.json"
+        next: merge_data
+
+  - id: merge_data
+    type: join
+    name: 合并数据
+    next: generate_report
+
+  - id: generate_report
+    type: llm
+    name: 生成报表
+    prompt: "请根据以下数据生成日报：{{merged_data}}"
+    next: save_report
+
+  - id: save_report
+    type: tool
+    name: 保存报告
+    tool: file_processor
+    params:
+      action: write
+      path: "./reports/daily_{{date}}.md"
+    next: end
+
+  - id: end
+    type: terminator
+    name: 结束

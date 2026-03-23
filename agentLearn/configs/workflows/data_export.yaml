@@ -1,0 +1,37 @@
+name: 数据导出工作流
+description: 从数据库查询数据并导出为 CSV 文件
+version: "1.0"
+
+nodes:
+  - id: start
+    type: trigger
+    name: 开始
+    next: query_db
+
+  - id: query_db
+    type: tool
+    name: 查询数据库
+    tool: db_query
+    params:
+      query: "SELECT * FROM users WHERE created_at > '{{start_date}}'"
+    next: transform_data
+
+  - id: transform_data
+    type: tool
+    name: 数据转换
+    tool: template
+    params:
+      format: csv
+    next: save_file
+
+  - id: save_file
+    type: tool
+    name: 保存文件
+    tool: file_processor
+    params:
+      path: "./exports/data_{{timestamp}}.csv"
+    next: end
+
+  - id: end
+    type: terminator
+    name: 结束

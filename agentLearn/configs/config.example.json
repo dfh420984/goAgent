@@ -1,0 +1,20 @@
+{
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "max_tokens": 4096,
+    "temperature": 0.7
+  },
+  "tools": {
+    "enabled": ["http_client", "file_processor", "shell_executor"],
+    "timeout": 30
+  },
+  "workflow": {
+    "max_steps": 50,
+    "enable_audit": true
+  },
+  "server": {
+    "port": 8080,
+    "cors_origins": ["http://localhost:5173"]
+  }
+}
