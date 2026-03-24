@@ -57,6 +57,7 @@ func main() {
 	toolRegistry.Register(tools.NewFileProcessorTool())
 	toolRegistry.Register(tools.NewHTTPClientTool())
 	toolRegistry.Register(tools.NewShellExecutorTool())
+	toolRegistry.Register(tools.NewWeatherTool())
 
 	// 创建 Agent 引擎
 	systemPrompt := "你是一个智能助手，可以帮助用户完成各种任务。你可以使用以下工具：文件处理、HTTP 请求、Shell 命令。"
