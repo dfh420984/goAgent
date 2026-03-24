@@ -13,7 +13,7 @@ nodes:
     name: 查询数据库
     tool: db_query
     params:
-      query: "SELECT * FROM users WHERE created_at > '{{start_date}}'"
+      query: "SELECT * FROM users"
     next: transform_data
 
   - id: transform_data
@@ -21,6 +21,7 @@ nodes:
     name: 数据转换
     tool: template
     params:
+      input: "{{query_db}}"
       format: csv
     next: save_file
 
@@ -29,7 +30,9 @@ nodes:
     name: 保存文件
     tool: file_processor
     params:
+      action: write
       path: "./exports/data_{{timestamp}}.csv"
+      content: "{{transform_data}}"
     next: end
 
   - id: end

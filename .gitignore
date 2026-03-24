@@ -11,3 +11,4 @@
 *.ini
 *.test
 *.log
+/agentLearn/data.db
