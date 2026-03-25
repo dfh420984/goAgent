@@ -64,24 +64,41 @@ func (e *Engine) Chat(ctx context.Context, userMessage string, streamCallback fu
 
 			// 执行每个工具调用
 			for _, tc := range resp.ToolCalls {
+				// 判断是 MCP 工具还是本地工具
+				isMCPTool := false
+				toolType := "本地工具"
+				if len(tc.Name) > 4 && tc.Name[:4] == "mcp_" {
+					isMCPTool = true
+					toolType = "MCP 工具"
+				}
+
 				// 打印工具调用信息
-				fmt.Printf("\n[TOOL CALL] 准备调用工具：%s\n", tc.Name)
+				fmt.Printf("\n[TOOL CALL] %s - 准备调用：%s\n", toolType, tc.Name)
 				fmt.Printf("[TOOL CALL] 参数：%s\n", tc.Arguments)
 
 				// 执行工具
 				toolResult, err := e.toolRegistry.ExecuteTool(ctx, tc.Name, tc.Arguments)
 				if err != nil {
-					fmt.Printf("[TOOL ERROR] 工具执行失败：%v\n", err)
+					fmt.Printf("[TOOL ERROR] %s 执行失败：%v\n", tc.Name, err)
 					return nil, fmt.Errorf("tool execution failed: %w", err)
 				}
 
 				// 打印工具执行结果
-				fmt.Printf("[TOOL RESULT] 工具 '%s' 执行成功\n", tc.Name)
-				if len(toolResult) > 200 {
-					// 如果结果太长，只显示前 200 个字符
-					fmt.Printf("[TOOL RESULT] 结果预览：%s...\n", toolResult[:200])
+				fmt.Printf("[TOOL RESULT] %s '%s' 执行成功\n", toolType, tc.Name)
+				if isMCPTool {
+					// MCP 工具通常返回较长结果，显示前 300 字符
+					if len(toolResult) > 300 {
+						fmt.Printf("[TOOL RESULT] 结果预览（前 300 字符）：%s...\n", toolResult[:300])
+					} else {
+						fmt.Printf("[TOOL RESULT] 结果：%s\n", toolResult)
+					}
 				} else {
-					fmt.Printf("[TOOL RESULT] 结果：%s\n", toolResult)
+					// 本地工具根据长度显示
+					if len(toolResult) > 200 {
+						fmt.Printf("[TOOL RESULT] 结果预览：%s...\n", toolResult[:200])
+					} else {
+						fmt.Printf("[TOOL RESULT] 结果：%s\n", toolResult)
+					}
 				}
 
 				// 添加工具调用和结果到消息历史
